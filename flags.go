@@ -13,3 +13,8 @@ var gitlabTokenFlag = cli.StringFlag{
 	EnvVar: "GITLAB_API_TOKEN",
 	Name:   "gltoken",
 }
+
+var releaseSlackHookFlag = cli.StringFlag{
+	EnvVar: "RELEASE_SLACK_HOOK",
+	Name:   "releasehook",
+}

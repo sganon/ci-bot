@@ -12,6 +12,7 @@ func main() {
 	app := cli.NewApp()
 	app.Flags = []cli.Flag{
 		gitlabAddrFlag, gitlabTokenFlag,
+		releaseSlackHookFlag,
 	}
 	app.Commands = []cli.Command{
 		releaseCmd,
