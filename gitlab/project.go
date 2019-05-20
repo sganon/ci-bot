@@ -1,14 +1,11 @@
 package gitlab
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type ProjectID int
@@ -31,20 +28,23 @@ type Project struct {
 	ForksCount        int       `json:"forks_count"`
 	AvatarURL         string    `json:"avatar_url"`
 	StarCount         int       `json:"star_count"`
+
+	// Struct representig a ref and its
+	// associated pipelines
+	Ref struct {
+		Value     string
+		Pipelines []Pipeline
+	}
 }
 
 // GetProjectByName will return specific project from GET /projects via its name
 // name could be of form group/project_name if forks exist
-func (api *API) GetProjectByName(name string) (proj Project, err error) {
+func GetProjectByName(api *API, name string) (proj Project, err error) {
 	splitedName := strings.Split(name, "/")
 	if len(splitedName) > 2 {
 		return proj, fmt.Errorf("project name should be of form [GROUP]/PROJECT")
 	}
 
-	endpoint, err := url.Parse(api.baseURL + "/projects")
-	if err != nil {
-		return proj, fmt.Errorf("error parsing GET /projects url: %v", err)
-	}
 	// we search for name in every case
 	query := url.Values{}
 	if len(splitedName) == 2 {
@@ -52,26 +52,14 @@ func (api *API) GetProjectByName(name string) (proj Project, err error) {
 	} else {
 		query.Add("search", name)
 	}
-	endpoint.RawQuery = query.Encode()
 
-	log.Debugf("Requesting: %s", endpoint.String())
-	req, err := http.NewRequest("GET", endpoint.String(), nil)
-	if err != nil {
-		return proj, fmt.Errorf("error creating GET /projects request: %v", err)
-	}
-	req.Header.Add("Private-Token", api.token)
-	res, err := api.client.Do(req)
-	if err != nil {
-		return proj, fmt.Errorf("error sending GET /projects request: %v", err)
-	}
-	if res.StatusCode != http.StatusOK {
-		return proj, fmt.Errorf("unexpected status code: %d, expected 200", res.StatusCode)
-	}
-	defer res.Body.Close()
 	var projects []Project
-	decoder := json.NewDecoder(res.Body)
-	if err = decoder.Decode(&projects); err != nil {
-		return proj, fmt.Errorf("error decoding response: %v", err)
+	statusCode, err := api.Call("GET", "/projects", query, nil, &projects)
+	if err != nil {
+		return proj, fmt.Errorf("GetProjectByName error: %v", err)
+	}
+	if statusCode != http.StatusOK {
+		return proj, fmt.Errorf("unexpected status code: %d, expected 200", statusCode)
 	}
 
 	switch len(projects) {
@@ -89,4 +77,21 @@ func (api *API) GetProjectByName(name string) (proj Project, err error) {
 	}
 
 	return proj, fmt.Errorf("unable to find unique matching project")
+}
+
+func (pj *Project) FetchRefPipelines(api *API) error {
+	if pj.Ref.Value == "" {
+		return fmt.Errorf("FetchRefPipelines error: ref must be set before fetching its pipelines")
+	}
+
+	statusCode, err := api.Call("GET",
+		fmt.Sprintf("/projects/%d/pipelines", int(pj.ID)),
+		url.Values{"ref": []string{pj.Ref.Value}}, nil, &pj.Ref.Pipelines)
+	if err != nil {
+		return fmt.Errorf("FetchRefPipelines error: %v", err)
+	}
+	if statusCode != http.StatusOK {
+		return fmt.Errorf("FetchRefPipelines: unexpected status code %d, expected 200", statusCode)
+	}
+	return nil
 }

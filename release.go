@@ -19,16 +19,17 @@ var releaseCmd = cli.Command{
 		if c.NArg() != 2 {
 			return fmt.Errorf("usage error: you need to provide [GROUP]/PROJECT TAG")
 		}
-		pj, err := glAPI.GetProjectByName(c.Args().Get(0))
+		pj, err := gitlab.GetProjectByName(glAPI, c.Args().Get(0))
 		if err != nil {
 			return fmt.Errorf("error getting project: %v", err)
 		}
 		fmt.Println(pj)
-		pp, err := glAPI.GetRefLastPipeline(pj, c.Args().Get(1))
+		pj.Ref.Value = c.Args().Get(1)
+		err = pj.FetchRefPipelines(glAPI)
 		if err != nil {
 			return fmt.Errorf("error getting pipelines: %v", err)
 		}
-		fmt.Println(pp)
+		fmt.Println(pj.Ref.Pipelines)
 		return err
 	},
 }
