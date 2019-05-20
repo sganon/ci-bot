@@ -21,9 +21,14 @@ var releaseCmd = cli.Command{
 		}
 		pj, err := glAPI.GetProjectByName(c.Args().Get(0))
 		if err != nil {
-			return fmt.Errorf("error getting project id: %v", err)
+			return fmt.Errorf("error getting project: %v", err)
 		}
 		fmt.Println(pj)
+		pp, err := glAPI.GetRefLastPipeline(pj, c.Args().Get(1))
+		if err != nil {
+			return fmt.Errorf("error getting pipelines: %v", err)
+		}
+		fmt.Println(pp)
 		return err
 	},
 }
