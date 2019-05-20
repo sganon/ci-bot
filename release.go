@@ -24,12 +24,17 @@ var releaseCmd = cli.Command{
 			return fmt.Errorf("error getting project: %v", err)
 		}
 		fmt.Println(pj)
-		pj.Ref.Value = c.Args().Get(1)
-		err = pj.FetchRefPipelines(glAPI)
+		pj.Tag.Name = c.Args().Get(1)
+		err = pj.FetchTagPipelines(glAPI)
 		if err != nil {
 			return fmt.Errorf("error getting pipelines: %v", err)
 		}
-		fmt.Println(pj.Ref.Pipelines)
+		fmt.Println(pj.Tag.Pipelines)
+		err = pj.FetchTag(glAPI)
+		if err != nil {
+			return fmt.Errorf("error getting tag: %v", err)
+		}
+		fmt.Println(pj.Tag.Release)
 		return err
 	},
 }

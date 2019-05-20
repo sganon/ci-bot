@@ -29,12 +29,7 @@ type Project struct {
 	AvatarURL         string    `json:"avatar_url"`
 	StarCount         int       `json:"star_count"`
 
-	// Struct representig a ref and its
-	// associated pipelines
-	Ref struct {
-		Value     string
-		Pipelines []Pipeline
-	}
+	Tag Tag
 }
 
 // GetProjectByName will return specific project from GET /projects via its name
@@ -79,19 +74,35 @@ func GetProjectByName(api *API, name string) (proj Project, err error) {
 	return proj, fmt.Errorf("unable to find unique matching project")
 }
 
-func (pj *Project) FetchRefPipelines(api *API) error {
-	if pj.Ref.Value == "" {
+func (pj *Project) FetchTagPipelines(api *API) error {
+	if pj.Tag.Name == "" {
 		return fmt.Errorf("FetchRefPipelines error: ref must be set before fetching its pipelines")
 	}
 
 	statusCode, err := api.Call("GET",
 		fmt.Sprintf("/projects/%d/pipelines", int(pj.ID)),
-		url.Values{"ref": []string{pj.Ref.Value}}, nil, &pj.Ref.Pipelines)
+		url.Values{"ref": []string{pj.Tag.Name}}, nil, &pj.Tag.Pipelines)
 	if err != nil {
-		return fmt.Errorf("FetchRefPipelines error: %v", err)
+		return fmt.Errorf("FetchTagPipelines error: %v", err)
 	}
 	if statusCode != http.StatusOK {
-		return fmt.Errorf("FetchRefPipelines: unexpected status code %d, expected 200", statusCode)
+		return fmt.Errorf("FetchTagPipelines: unexpected status code %d, expected 200", statusCode)
+	}
+	return nil
+}
+
+func (pj *Project) FetchTag(api *API) error {
+	if pj.Tag.Name == "" {
+		return fmt.Errorf("FetchTag error: ref must be set before fetching its pipelines")
+	}
+	statusCode, err := api.Call("GET",
+		fmt.Sprintf("/projects/%d/repository/tags/%s", int(pj.ID), pj.Tag.Name),
+		nil, nil, &pj.Tag)
+	if err != nil {
+		return fmt.Errorf("FetchTag error: %v", err)
+	}
+	if statusCode != http.StatusOK {
+		return fmt.Errorf("FetchTag: unexpected status code %d, expected 200", statusCode)
 	}
 	return nil
 }
