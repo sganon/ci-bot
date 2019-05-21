@@ -15,7 +15,7 @@ func main() {
 		releaseSlackHookFlag,
 	}
 	app.Commands = []cli.Command{
-		releaseCmd,
+		releaseCmd, apiCmd,
 	}
 
 	if err := app.Run(os.Args); err != nil {
