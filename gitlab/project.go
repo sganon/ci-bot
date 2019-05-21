@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sganon/ci-bot/slack"
+	"github.com/sganon/code-bot/slack"
 )
 
 type ProjectID int

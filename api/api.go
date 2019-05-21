@@ -4,22 +4,19 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
-
-	"fmt"
-
 	"strings"
 
 	"github.com/gorilla/handlers"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 
-	"encoding/hex"
-	"encoding/json"
-
-	"github.com/sganon/ci-bot/gitlab"
-	"github.com/sganon/ci-bot/slack"
+	"github.com/sganon/code-bot/gitlab"
+	"github.com/sganon/code-bot/slack"
 )
 
 // API expose routes to handle slacke request

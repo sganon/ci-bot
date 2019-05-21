@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/sganon/ci-bot/api"
-	"github.com/sganon/ci-bot/gitlab"
 	"github.com/urfave/cli"
+
+	"github.com/sganon/code-bot/api"
+	"github.com/sganon/code-bot/gitlab"
 )
 
 var apiCmd = cli.Command{

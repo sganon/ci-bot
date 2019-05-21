@@ -5,7 +5,7 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/sganon/ci-bot/gitlab"
+	"github.com/sganon/code-bot/gitlab"
 )
 
 var releaseCmd = cli.Command{
