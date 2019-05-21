@@ -9,19 +9,21 @@ import (
 )
 
 type Attachment struct {
-	Color      string `json:"color"`
-	Pretext    string `json:"pretext,omitempty"`
-	AuthorName string `json:"author_name,omitempty"`
-	Title      string `json:"title"`
-	TitleLink  string `json:"title_link,omitempty"`
-	Text       string `json:"text"`
-	Fields     []struct {
-		Title string `json:"title"`
-		Value string `json:"High"`
-		Short bool   `json:"short"`
-	} `json:"fields"`
+	Color      string  `json:"color"`
+	Pretext    string  `json:"pretext,omitempty"`
+	AuthorName string  `json:"author_name,omitempty"`
+	Title      string  `json:"title"`
+	TitleLink  string  `json:"title_link,omitempty"`
+	Text       string  `json:"text"`
+	Fields     []Field `json:"fields"`
 
 	Fallback string `json:"fallback"`
+}
+
+type Field struct {
+	Title string `json:"title"`
+	Value string `json:"value"`
+	Short bool   `json:"short"`
 }
 
 func (a Attachment) Send(hookURL string) error {

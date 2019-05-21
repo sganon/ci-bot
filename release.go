@@ -5,10 +5,7 @@ import (
 
 	"github.com/urfave/cli"
 
-	"strings"
-
 	"github.com/sganon/ci-bot/gitlab"
-	"github.com/sganon/ci-bot/slack"
 )
 
 var releaseCmd = cli.Command{
@@ -38,17 +35,7 @@ var releaseCmd = cli.Command{
 			return fmt.Errorf("error getting tag: %v", err)
 		}
 		fmt.Println(pj.Tag.Release)
-
-		text := strings.ReplaceAll(pj.Tag.Release.Description, "*", "•")
-		attch := slack.Attachment{
-			Fallback: "release text",
-			Color:    "#008bd2",
-			Pretext:  fmt.Sprintf("New release of project %s: *%s*", pj.NameWithNamespace, pj.Tag.Name),
-			Title:    "Changelog",
-			Text:     text,
-		}
-		attch.Send(cp.String("releasehook"))
-
+		pj.Attachement().Send(cp.String(releaseSlackHookFlag.Name))
 		return err
 	},
 }

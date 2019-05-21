@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/sganon/ci-bot/slack"
 )
 
 type ProjectID int
@@ -105,4 +107,30 @@ func (pj *Project) FetchTag(api *API) error {
 		return fmt.Errorf("FetchTag: unexpected status code %d, expected 200", statusCode)
 	}
 	return nil
+}
+
+func (pj Project) Attachement() slack.Attachment {
+	main := fmt.Sprintf("New release of %s: *<%s/tags/%s|%s>*",
+		pj.PathWithNamespace, pj.WebURL, pj.Tag.Name, pj.Tag.Name)
+
+	fields := []slack.Field{
+		slack.Field{
+			Title: "Changelog",
+			Value: strings.ReplaceAll(pj.Tag.Release.Description, "*", "•"),
+		},
+	}
+	if len(pj.Tag.Pipelines) > 0 {
+		lastPipeline := pj.Tag.Pipelines[len(pj.Tag.Pipelines)-1]
+		fields = append(fields, slack.Field{
+			Title: "Last pipeline",
+			Value: fmt.Sprintf("<%s|#%d>: %s", lastPipeline.WebURL, lastPipeline.ID, lastPipeline.Status),
+		})
+	}
+
+	return slack.Attachment{
+		Fallback: main,
+		Color:    "#008bd2",
+		Pretext:  main,
+		Fields:   fields,
+	}
 }
