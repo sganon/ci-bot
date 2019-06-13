@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -32,6 +33,17 @@ type Project struct {
 	StarCount         int       `json:"star_count"`
 
 	Tag Tag
+}
+
+func GetProjectByID(api *API, id int) (proj Project, err error) {
+	statusCode, err := api.Call("GET", "/projects/"+strconv.Itoa(id), nil, nil, &proj)
+	if err != nil {
+		return proj, fmt.Errorf("GetProjectByID error: %v", err)
+	}
+	if statusCode != http.StatusOK {
+		return proj, fmt.Errorf("unexpected status code: %d, expected 200", statusCode)
+	}
+	return proj, err
 }
 
 // GetProjectByName will return specific project from GET /projects via its name

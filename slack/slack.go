@@ -12,6 +12,7 @@ type Attachment struct {
 	Color      string  `json:"color"`
 	Pretext    string  `json:"pretext,omitempty"`
 	AuthorName string  `json:"author_name,omitempty"`
+	AuthorIcon string  `json:"author_icon,omitempty"`
 	Title      string  `json:"title"`
 	TitleLink  string  `json:"title_link,omitempty"`
 	Text       string  `json:"text"`
