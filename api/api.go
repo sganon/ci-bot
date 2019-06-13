@@ -5,7 +5,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -67,6 +66,7 @@ func (api *API) routes() {
 
 	router.POST("/ack/", api.handleACK)
 	router.POST("/release/", api.handleRelease)
+	router.POST("/mr/", api.handleMR)
 
 	api.handler = router
 }
@@ -81,6 +81,13 @@ func (api API) handleACK(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	fmt.Fprintln(w, "OK")
 }
 
+type slackResponse struct {
+	ResponseType string             `json:"response_type"`
+	Attachments  []slack.Attachment `json:"attachments"`
+}
+
+const inChannelType = "in_channel"
+
 func (api API) handleRelease(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if err := r.ParseForm(); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -91,7 +98,7 @@ func (api API) handleRelease(w http.ResponseWriter, r *http.Request, _ httproute
 	text := r.Form.Get("text")
 	parts := strings.Split(text, " ")
 	if len(parts) != 2 {
-		fmt.Fprintln(w, `{ "text": "usage: [group]/project tag" }`)
+		slackErrorResponse(w, "*usage*: [group]/project tag")
 		return
 	}
 	name := parts[0]
@@ -99,34 +106,25 @@ func (api API) handleRelease(w http.ResponseWriter, r *http.Request, _ httproute
 
 	pj, err := gitlab.GetProjectByName(api.glAPI, name)
 	if err != nil {
-		fmt.Fprintln(w, `{ "text": "unable to find matching project" }`)
+		slackErrorResponse(w, "Cannot find project")
 		return
 	}
 
 	pj.Tag.Name = tag
 	err = pj.FetchTagPipelines(api.glAPI)
 	if err != nil {
-		fmt.Fprintln(w, `{ "text": "error fetching pipelines" }`)
+		slackErrorResponse(w, "Error fetching project pipelines")
 		return
 	}
 
 	err = pj.FetchTag(api.glAPI)
 	if err != nil {
-		fmt.Fprintln(w, `{ "text": "error fetching tag" }`)
+		slackErrorResponse(w, "Error fetching project tagss")
 		return
 	}
 
-	b, err := json.Marshal(struct {
-		ResponseType string             `json:"response_type"`
-		Attachements []slack.Attachment `json:"attachments"`
-	}{
-		ResponseType: "in_channel",
-		Attachements: []slack.Attachment{pj.Attachement()},
+	jsonResponse(w, http.StatusOK, slackResponse{
+		ResponseType: inChannelType,
+		Attachments:  []slack.Attachment{pj.Attachment()},
 	})
-	if err != nil {
-		fmt.Fprintln(w, `{ "text": "error encoding response" }`)
-		return
-	}
-
-	fmt.Fprintf(w, string(b))
 }

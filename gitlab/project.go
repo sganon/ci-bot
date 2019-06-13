@@ -109,7 +109,7 @@ func (pj *Project) FetchTag(api *API) error {
 	return nil
 }
 
-func (pj Project) Attachement() slack.Attachment {
+func (pj Project) Attachment() slack.Attachment {
 	main := fmt.Sprintf("New release of %s: *<%s/tags/%s|%s>*",
 		pj.PathWithNamespace, pj.WebURL, pj.Tag.Name, pj.Tag.Name)
 

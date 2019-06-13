@@ -53,3 +53,15 @@ func (a Attachment) Send(hookURL string) error {
 	fmt.Println(string(b))
 	return nil
 }
+
+func ErrorMessage(msg string) Attachment {
+	attch := Attachment{
+		Color: "#C93C20",
+		Title: "Error!",
+		Fields: []Field{
+			Field{Title: "❌", Value: msg},
+		},
+		Fallback: "Error: " + msg,
+	}
+	return attch
+}

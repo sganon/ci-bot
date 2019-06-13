@@ -35,7 +35,7 @@ var releaseCmd = cli.Command{
 			return fmt.Errorf("error getting tag: %v", err)
 		}
 		fmt.Println(pj.Tag.Release)
-		pj.Attachement().Send(cp.String(releaseSlackHookFlag.Name))
+		pj.Attachment().Send(cp.String(releaseSlackHookFlag.Name))
 		return err
 	},
 }
